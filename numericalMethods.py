@@ -1,9 +1,20 @@
 #region imports
-import matrixOperations as GE  # this is the module from lecture 2 that has useful matrix manipulation functions
+import matrixOperations as mo  # this is the module from lecture 2 that has useful matrix manipulation functions
 from math import sqrt, pi, exp, cos
 #endregion
 
 #region function definitions
+#region probability calculations
+"""
+The following functions are designed to integrate the Gaussian/Normal Probability Density Function using the 
+Simpson 1/3 rule.
+Characteristics of the GNPDF (or GPDF) are:
+1.  It is symmetric about the mean.
+2.  The area beneath the GNPDF equals 1.0.
+3.  Integrating between some left limit x to some right limit x represents the probability that the continuous random
+    variable x lies between the limits.
+4.  68% of the area is between +/-1*StDev of the mean, 95.5% between +/-2*StDev of the mean.
+"""
 def Probability(PDF, args, c, GT=True):
     """
     This is the function to calculate the probability that x is >c or <c depending
@@ -24,7 +35,6 @@ def Probability(PDF, args, c, GT=True):
     rhl = c
     p = Simpson(PDF, (mu, sig, lhl,rhl))
     return 1-p if GT is True else p
-
 def GPDF(args):
     """
     Here is where I will define the Gaussian probability density function.
@@ -43,7 +53,6 @@ def GPDF(args):
     fx = (1 / (sig * sqrt(2 * pi))) * exp(-0.5 * ((x - mu) / sig) ** 2)
     # step 3: return value
     return fx
-
 def Simpson(fn, args, N=100):
     """
     This executes the Simpson 1/3 rule for numerical integration (see page 832, Table 19.4).
@@ -74,7 +83,9 @@ def Simpson(fn, args, N=100):
     _Sum += 4*odd_sum+2*even_Sum
     area = (h/3)*_Sum
     return area
+#endregion
 
+#region other numerical methods
 def Secant(fcn, x0, x1, maxiter=10, xtol=1e-5):
     """
     This funciton implements th Secant method to find the root of an equation.  You should write your equation in a form
@@ -99,7 +110,6 @@ def Secant(fcn, x0, x1, maxiter=10, xtol=1e-5):
         x1=x_New
         iter+=1
     return (x1,iter)
-
 def GaussSeidel(Aaug, x, Niter = 15):
     """
     This should implement the Gauss-Seidel method (see page 860, Tabl 20.2) for solving a system of equations.
@@ -113,7 +123,7 @@ def GaussSeidel(Aaug, x, Niter = 15):
     # Step 2a:  solve first row for x[0] using old values for x[1], etc
     # Step 2b:  solve remaining rows for x[i] using new values above and old values below
     # Step 3:  return x after Niter
-    Aaug = GE.MakeDiagDom(Aaug)
+    Aaug = mo.MakeDiagDom(Aaug)
     n_Rows = len(Aaug)
     n_Cols = len(Aaug[0])-1
 
@@ -124,6 +134,7 @@ def GaussSeidel(Aaug, x, Niter = 15):
                 rhs -= Aaug[i][k] * x[k] if not k==i else 0
             x[i] = rhs / Aaug[i][i]  # we can run into a problem if the diagonal has a zero
     return x
+#endregion
 
 def main():
     '''

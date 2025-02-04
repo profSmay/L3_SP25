@@ -20,33 +20,43 @@ def main():
     :return: Nothing to return, just print results to screen.
     """
     #region testing user input
+    # setting the initial default values
     Again = True
     mean = 0
     stDev = 1.0
     c = 0.5
+    OneSided = True  # integrates from mu-5*sig if true, from mu-(c-mu) to mu+(c-mu) if False
+    GT = False
+    yesOptions = ["y","yes","true"]
     while Again==True:
         # The following code solicites user input through the CLI.
         response = input(f"Population mean? ({mean:0.3f})")
         # "clean the user input
         response = response.strip().lower()  # strip of leading or trailing spaces and make lower case.
-        if response == '':
-            mean=mean
-        else:
-            mean = float(response)  # Whatever the user types, it is a string.  I need to convert it to a floating point number.
+        mean = float(response) if response != '' else mean
 
-        stDev = 1.0
         response = input(f"Standard deviation? ({stDev:0.3f})").strip().lower()
         stDev = float(response) if response != '' else stDev
-        c=2.0
-        response = input(f"c value? ({c:0.3f})").strip().lower()
 
+        response = input(f"c value? ({c:0.3f})").strip().lower()
         c = float(response) if response != '' else c
 
-        GT = False
         response=input(f"Probability greater than c? ({GT})").strip().lower()
-        GT = True if response in ["y","yes","true"] else GT
-        prob = Probability(GPDF,(mean,stDev),c,GT=GT)
-        print(f"P(x"+(">" if GT == True else "<") + f"{c:0.2f}" +"|"+f"{mean:0.2f}"+", "+f"{stDev:0.2f}" +f") = {prob:0.2f}")
+        GT = True if response in yesOptions else False
+
+        response=input(f"One sided? ({OneSided})").strip().lower()
+        OneSided = True if response in yesOptions else False
+        if OneSided==True:
+            prob = Probability(GPDF,(mean,stDev),c,GT=GT)
+            print(f"P(x"+(">" if GT == True else "<") + f"{c:0.2f}" +"|"+f"{mean:0.2f}"+", "+f"{stDev:0.2f}" +f") = {prob:0.2f}")
+        else:
+            prob = Probability(GPDF, (mean, stDev),c, GT=True)
+            prob = 1-2*prob
+            if GT == True:
+                print(f"P({mean-(c-mean)}>x>{mean+(c-mean)}|{mean:0.2f},{stDev:0.2f}) = {1-prob:0.3f}")
+            else:
+                print(f"P({mean-(c-mean)}<x<{mean+(c-mean)}|{mean:0.2f},{stDev:0.2f}) = {prob:0.3f}")
+
         response = input(f"Go again? (Y/N)").strip().lower()
         Again = True if response in ["y","yes","true"] else False
     #endregion

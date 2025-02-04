@@ -25,15 +25,28 @@ def Transpose(A):
     return cv
 
 def makeColumnVector(x):
+    """
+    This takes a vector x that may be:
+    1. a row vector of form [[]]
+    2. a simple list of form []
+    3. a column vector of form [[]]
+    :param x: row or column vector
+    :return: a column vector of form [[]]
+    """
     if isinstance(x[0],list):  # has form [[]]
-        if len(x[0])>1:
+        if len(x[0])>1:  # implies we have a proper row vector
             return [[xx] for xx in x[0]]
-        else:
-            return [[xx] for xx in x]
-    else:
+        else:  # implies we already have a column vector
+            return [dc(xx) for xx in x]
+    else:  # implies we have a simple list
         return [[xx] for xx in x]
 
 def separateAugmented(A):
+    """
+    This separates the last column from an augmented matrix
+    :param A: An augmented axis
+    :return: A matrix, a column vector
+    """
     AA=dc(A)
     b,AA = popColumn(AA,j=len(A[0])-1)
     return AA, b
@@ -205,8 +218,9 @@ def AugmentMatrix(A,B):
     :return:
     '''
     C=CP.deepcopy(A)
-    for i in range(len(C)):
-        C[i].append(B[i])
+    for r in range(len(C)):
+        for c in range(len(B[r])):
+            C[r].append(B[r][c])
     return C
 
 #remove the jth column from matrix A
@@ -215,27 +229,28 @@ def popColumn(A, j):
     I want to remove column j from matrix A.  I'm using slicing to cut out the column j
     :param A: The matrix
     :param j: Index of the column I want to remove
-    :return:  The matrix with column j removed
+    :return:  The column vector removed and the matrix with column j removed
     '''
     numRows = len(A)
     AA = dc(A)
-    c=[0]*len(AA)  # create a column vector of proper length initially filled with zeros
+    c=[[0] for r in range(len(A))] # create a column vector of proper length initially filled with zeros
     for rowIndex in range(numRows):
-        c[rowIndex]=AA[rowIndex].pop(j)
+        c[rowIndex][0]=AA[rowIndex].pop(j)
     return c, AA
 
 def insertColumn(A,b, i):
     '''
-    This should insert column vector b into matrix A at index i.  All columns to the right of i should move right by 1
+    This should insert column vector b into matrix A at column index i.  All columns to the right of i should move right by 1
     :param A: a matrix
     :param b: a column vector
     :param i: the index where to insert b
     :return: the new matrix with b inserted
     '''
+    bb = makeColumnVector(b)  # ensure b has the proper form [[]]
     ANew = dc(A)
     for r in range(len(ANew)):
         newRow = dc(ANew[r])
-        newRow.insert(i,b[r])
+        newRow.insert(i,b[r][0])
         ANew[r]=dc(newRow)
     return ANew
 
@@ -264,7 +279,7 @@ def InvertMatrix(A):
     Ainv = AugmentMatrix(A, ID)
     IAinv = ReducedEchelonForm(Ainv)
     for j in range(len(ID[0])-1, -1, -1):
-        IAinv = popColumn(IAinv, j)
+        c, IAinv = popColumn(IAinv, j)
     return IAinv
 
 #use this to multiply matrices of correct dimensions
@@ -316,7 +331,7 @@ def main():
         print(r)
 
     #for solving [A][x]=[b]
-    A=popColumn(M, len(M[0]) - 1) #remove last column of augmented matrix M
+    c,A=popColumn(M, len(M[0]) - 1) #remove last column of augmented matrix M
 
     MI=InvertMatrix(A)
 
@@ -324,7 +339,7 @@ def main():
     for r in MI:
         print(r)
 
-    B=MatrixMultiply(A,MI)
+    B=MatrixMultiply(A,MI)  # this should give the identity matrix
 
     print("A^-1*A")
     for r in B:
